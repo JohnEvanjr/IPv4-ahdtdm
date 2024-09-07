@@ -4,9 +4,9 @@ import React, { useState } from "react";
 import { calculateSubnet } from "../backend/calculateSubnet";
 
 export default function IPv4() {
-  const [ipParts, setIpParts] = useState(["", "", "", "", ""]);
-  const [subnet, setSubnet] = useState(24); // Mặc định subnet là /24
-  const [subnetCount, setSubnetCount] = useState("1"); // Mặc định 1 mạng con
+  const [ipParts, setIpParts] = useState(["", "", "", ""]); // Chỉ nhập 4 octet
+  const [subnet, setSubnet] = useState("24"); // Thêm ô nhập cho subnet
+  const [subnetCount, setSubnetCount] = useState("1");
   const [results, setResults] = useState<any>(null);
   let IP_order = 0;
 
@@ -17,9 +17,9 @@ export default function IPv4() {
   };
 
   const handleCalculate = () => {
-    const ip = ipParts.slice(0, 4).join(".");
-    const subnetBits = parseInt(ipParts[4]) || subnet;
-    const requiredSubnets = parseInt(subnetCount) || 1; //mặc định 1
+    const ip = ipParts.join(".");
+    const subnetBits = parseInt(subnet) || 24; // Sử dụng subnet từ ô nhập
+    const requiredSubnets = parseInt(subnetCount) || 1;
 
     try {
       const result = calculateSubnet(ip, subnetBits, requiredSubnets);
@@ -36,18 +36,25 @@ export default function IPv4() {
       </div>
       <div className="flex items-center gap-2 mt-4">
         {ipParts.map((part, index) => (
-        <React.Fragment key={index}>
+          <React.Fragment key={index}>
             <input
-            type="text"
-            placeholder={index < 4 ? `Octect ${index + 1}` : "/24"}
-            value={part}
-            onChange={(e) => handleIpChange(index, e.target.value)}
-            className="border p-2 rounded w-20"
+              type="text"
+              placeholder={`Octet ${index + 1}`}
+              value={part}
+              onChange={(e) => handleIpChange(index, e.target.value)}
+              className="border p-2 rounded w-20"
             />
-        {index < 3 && <span className="text-xl">.</span>}
-        </React.Fragment>
+            {index < 3 && <span className="text-xl">.</span>}
+          </React.Fragment>
         ))}
-    </div>
+        <input
+          type="text"
+          placeholder="Subnet"
+          value={subnet}
+          onChange={(e) => setSubnet(e.target.value)}
+          className="border p-2 rounded w-16"
+        />
+      </div>
 
       <input
         type="number"
@@ -65,25 +72,21 @@ export default function IPv4() {
 
       {results && (
         <div>
-            <a className="text-3xl font-semibold">Calculation Results:</a>
-            <div className="mt-5 grid grid-cols-3">
-          {results.map((subnet: any, index: number) => (
-            <div key={index} className="mt-3 py-5 border-b-2">
-            <div className="font-bold text-2xl my-2">
-                Network {++IP_order}
-            </div>
-              <p className="text-xl">Network Address: {subnet.networkAddress}</p>
-              <p className="text-xl">Broadcast Address: {subnet.broadcastAddress}</p>
-              <p className="text-xl">Subnet Mask: {subnet.subnetMask}</p>
-              <p className="text-xl">Available Hosts: {subnet.availableHosts}</p>
-              <p className="text-xl">
-                Subnet Range: {subnet.subnetRange[0]} -{" "}
-                {subnet.subnetRange[1]}
-              </p>
-
-            </div>
-          ))}
-        </div>
+          <a className="text-3xl font-semibold">Calculation Results:</a>
+          <div className="mt-5 grid grid-cols-3">
+            {results.map((subnet: any, index: number) => (
+              <div key={index} className="mt-3 py-5 border-b-2">
+                <div className="font-bold text-2xl my-2">Network {++IP_order}</div>
+                <p className="text-xl">Network Address: {subnet.networkAddress}</p>
+                <p className="text-xl">Broadcast Address: {subnet.broadcastAddress}</p>
+                <p className="text-xl">Subnet Mask: {subnet.subnetMask}</p>
+                <p className="text-xl">Available Hosts: {subnet.availableHosts}</p>
+                <p className="text-xl">
+                  Subnet Range: {subnet.subnetRange[0]} - {subnet.subnetRange[1]}
+                </p>
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>
